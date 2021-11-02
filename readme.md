@@ -40,10 +40,11 @@ The `mosquitto` service implements an mqtt server which is used
 internally as a backend by `zigbee2mqtt` but can be used by any 
 application, even from outside your local network. 
 
-`zigbee2mqtt` is an open source zigbee to mqtt bridge compatible 
+`zigbee2mqtt` is an open source zigbee-to-mqtt bridge compatible 
 with many available devices. The frontend for `zigbee2mqtt` is also
-exposed on the local network. If you don't need zigbee, you can 
-just comment out the zigbee2mqtt section in `docker-compose.yml`.
+exposed on the local network. If you don't need zigbee in your setup, 
+you can just comment out the zigbee2mqtt section in 
+`docker-compose.yml`.
 
 `node-red` is a programming tool for event driven applications.
 comes with a flow and a dashboard preinstalled that checks 
@@ -52,13 +53,15 @@ the stack you can add your own flows or nodes.
 
 `influxdb` is a time series database with a very complete UI that
 includes graphs and dashboards. The UI also guides the
-user through a setup process.
+user through a setup process. I have not yet included grafana 
+for the time being as influxdb in its version 2 is quite 
+capable displaying graphs. It would be easy to add grafa though.
 
 ## Preparations
 
 If you intend to use influxdb v 2.0, you'll need a 64 bit operating system 
 on your Raspberry Pi for this stack (infuxdb 2.0 is not available on 32 bit). 
-If influxdb v 1.8 is ok for you a 32 bit OS should suffice. When using 
+If influxdb v 1.8 is ok for you, a 32 bit OS should suffice. When using 
 the Raspian OS you have to take care to use `pi` instead of `ubuntu` 
 as username in the following commands.
 
@@ -119,14 +122,14 @@ necessary for the applications in this stack. The idea is that the command
 should create a starting point for running the stack, providing all 
 necessary directories and configuration files. For some applications 
 you might need to make some modifications to configuration files
-for your specific setup
+for your specific setup.
 
 ### zigbee2mqtt
 
 The `zigbee2mqtt` configuration in `docker-compose.yml` maps the 
 device corresponding to the USB stick to `/dev/ttyACM0` inside the 
-container. In my case, the device is `/dev/ttyUSB0`, so I map 
-`/dev/ttyUSB0` to `/dev/ttyACM0`. Check your device with 
+container. In my case, the device on the Pi host is `/dev/ttyUSB0`, 
+so I map `/dev/ttyUSB0` to `/dev/ttyACM0`. Check your device with 
 `ls /dev/tty*` and adjust the `docker-compose.yml` accordingly. 
 
 We also need to give permissions for the user to write to the device. 
@@ -163,23 +166,23 @@ user of your choice (change `user` in what follows)
       mosquitto/config/mosquitto.passwd user
 
 The default user/password combination is referenced from within Node-RED 
-in the global configuration node `mqtt-broker/mosquitto`. In Node-RED, 
+in the global configuration node "mqtt-broker/mosquitto". In Node-RED, 
 credentials are encrypted in `data/flows_cred.json`. The key used 
 to encrypt these credentials is configured in `settings.js`, 
-see `credentialSecret`. After changing the mosquitto password
+see key `credentialSecret`. After changing the mosquitto password
 you should first change the setting `credentialSecret` in 
 `volumes/node-red/data/settings.js`.
 
-After starting the stack (see next section) Node-Red will
-then invalidate the current credentials and you have 
-to enter them again by editing the `mqtt-broker/mosquitto` node 
-(tab security). 
+After starting the stack (see next section) Node-Red will detect
+the change in `credentialSecret` and then invalidate the current 
+credentials and you have to enter them again by editing the 
+"mqtt-broker/mosquitto" node (tab security). 
 
-The same user/password combination also has to be updated in 
-zigbee2mqtt, as it uses the mqtt server as a backend. Unfortunately 
-zigbee2mqtt stores the mqtt user and password as cleartext in 
-`data/configuration.yaml`. Edit the file and update user and 
-password to the new value.
+The same user/password combination also has to be updated in the
+configuration of zigbee2mqtt, as it uses the mqtt server as a backend. 
+Unfortunately zigbee2mqtt stores the mqtt user and password as 
+cleartext in `data/configuration.yaml`. Edit the file and update 
+user and password to the new value.
 
 ### start services
 
@@ -190,7 +193,7 @@ We now are ready to start the stack.
 
 ## After starting the stack
 
-Open http://raspi.local:8080 (substitute your host name). 
+Open http://raspi.local (substitute your host name). 
 
 * open `traefik dashboard` from the menu and check for errors
 * open `portainer` and create an admin account
@@ -202,7 +205,7 @@ the flow. Then
 
 * open `node-red dashboard` and check if the "mqtt ping" has a recent 
   contact. Check if the zigbee2mqtt bridge is online
-* open `zigbee2mqtt frontend` 
+* open `zigbee2mqtt frontend` and pair your devices
 * open `influxdb` and follow the instructions to set up a new user
 
 Now everything is up to you, add some flows to Node-Red, use `influxdb`
