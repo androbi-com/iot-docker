@@ -1,0 +1,164 @@
+version: '3.4'
+
+services:
+
+  traefik:
+    container_name: traefik
+    image: traefik:latest
+    restart: unless-stopped
+    ports:
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
+      - target: 1883
+        published: 1883
+        mode: host
+      - target: 8883
+        published: 8883
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./volumes/traefik/config/traefik.yml:/etc/traefik/traefik.yml
+      - ./volumes/traefik/acme:/etc/traefik/acme
+
+    labels:
+      - "traefik.enable=true"
+      # middleware: redirect to https
+      - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.web_local_header.headers.customrequestheaders.X-Root-Dir=web_local"
+      - "traefik.http.middlewares.web_remote_header.headers.customrequestheaders.X-Root-Dir=web_remote"
+      - "traefik.http.middlewares.allow_ip_local.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.1.0/24"
+      - "traefik.http.middlewares.replacepath_web_remote.replacepath.path=/web_remote/"
+      - "traefik.http.middlewares.replacepath_web_local.replacepath.path=/web_local/"
+      - "traefik.tcp.middlewares.tcp_allow_ip_local.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.1.0/24"
+      # router http: redirect http://REMOTE_HOST to https
+      - "traefik.http.routers.web_to_websecure.rule=Host(`${REMOTE_HOST}`)"
+      - "traefik.http.routers.web_to_websecure.middlewares=https-redirect"
+      - "traefik.http.routers.web_to_websecure.entrypoints=web"
+      # this is a fake service which will never get called but is necessary for the config
+      - "traefik.http.routers.redirect_router.service=noop"
+      - "traefik.http.services.noop.loadBalancer.server.url=192.168.1.1"
+      - "traefik.http.services.noop.loadbalancer.server.port=80"
+      # api & dashboard only for local host
+      - "traefik.http.routers.local_api_router.rule=Host(`${LOCAL_HOST}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.local_api_router.entrypoints=web"
+      - "traefik.http.routers.local_api_router.middlewares=allow_ip_local"
+      - "traefik.http.routers.local_api_router.service=api@internal"
+    networks:
+      - traefik
+
+  nginx:
+    container_name: nginx
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - target: 80
+    volumes:
+      - ./volumes/nginx/html:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      # show https web page to outside world, we currently only have the index.html
+      - "traefik.http.routers.remote_websecure.rule=Host(`${REMOTE_HOST}`) && Path(`/`)"
+      - "traefik.http.routers.remote_websecure.entrypoints=websecure"
+      - "traefik.http.routers.remote_websecure.middlewares=replacepath_web_remote"
+      - "traefik.http.routers.remote_websecure.tls=true"
+      # the local web page is http only and contains links to all servcies
+      - "traefik.http.routers.remote_websecure.tls.certresolver=myresolver"
+      - "traefik.http.routers.local_websecure.rule=Host(`${LOCAL_HOST}`) && Path(`/`)"
+      - "traefik.http.routers.local_websecure.entrypoints=web"
+      - "traefik.http.routers.local_websecure.middlewares=allow_ip_local,replacepath_web_local"
+    networks:
+      - traefik
+
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Amsterdam
+    ports:
+      - target: 1883
+        protocol: tcp
+    volumes:
+      - ./volumes/mosquitto/data:/mosquitto/data
+      - ./volumes/mosquitto/config:/mosquitto/config
+      - ./volumes/mosquitto/log:/mosquitto/log
+    labels:
+     - "traefik.enable=true"
+     - "traefik.tcp.services.mosquitto.loadbalancer.server.port=1883"
+     # mqtt router
+     - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
+     - "traefik.tcp.routers.mqtt.rule=HostSNI(`*`)"
+     - "traefik.tcp.routers.mqtt.service=mosquitto"
+     - "traefik.tcp.routers.mqtt.middlewares=tcp_allow_ip_local"
+     # tls mqtt router
+     - "traefik.tcp.routers.mqttsecure.entrypoints=mqttsecure"
+     - "traefik.tcp.routers.mqttsecure.rule=HostSNI(`${REMOTE_HOST}`)"
+     - "traefik.tcp.routers.mqttsecure.service=mosquitto"
+     - "traefik.tcp.routers.mqttsecure.tls=true"
+    networks:
+      - node-red-net
+      - traefik
+
+  portainer-ce:
+    container_name: portainer-ce
+    image: portainer/portainer-ce
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./volumes/portainer-ce/data:/data
+    networks:
+      - node-red-net
+
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Amsterdam
+    devices:
+      - /dev/ttyUSB0:/dev/ttyACM0
+    networks:
+      - node-red-net
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./volumes/zigbee2mqtt/data:/app/data
+      - /run/udev:/run/udev:ro
+    privileged: true
+    depends_on:
+      - mosquitto
+
+  node-red:
+    container_name: node-red
+    image: node-red-ext
+    build: ./setup/node-red/.
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Amsterdam
+    ports:
+      - "1880:1880"
+    networks:
+      - node-red-net
+    volumes:
+      - ./volumes/node-red/data:/data
+
+  influxdb2:
+    container_name: influxdb2
+    image: "influxdb:2.0"
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./volumes/influxdb2/data:/var/lib/influxdb2
+    networks:
+      - node-red-net
+networks:
+  node-red-net:
+  traefik:

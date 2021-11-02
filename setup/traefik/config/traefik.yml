@@ -1,0 +1,26 @@
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+  mqtt:
+    address: ":1883"
+  mqttsecure:
+    address: ":8883"
+api:
+  dashboard: true
+log:
+  level: debug
+providers:
+    docker: 
+      exposedbydefault: false
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: denk@us.es
+      storage: /etc/traefik/acme/acme.json
+      #caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      httpChallenge:
+        # used during the challenge
+        entryPoint: web

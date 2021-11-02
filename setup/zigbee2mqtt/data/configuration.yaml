@@ -1,0 +1,34 @@
+homeassistant: false
+permit_join: true
+mqtt:
+  base_topic: zigbee2mqtt
+  server: mqtt://mosquitto
+  user: mqtt
+  password: mqttpasswd
+serial:
+  port: /dev/ttyACM0
+frontend:
+  port: 8085
+advanced:
+  homeassistant_legacy_entity_attributes: false
+  legacy_api: false
+  network_key:
+    - 35
+    - 184
+    - 182
+    - 229
+    - 31
+    - 114
+    - 179
+    - 89
+    - 200
+    - 10
+    - 173
+    - 131
+    - 24
+    - 136
+    - 125
+    - 26
+  pan_id: 54114
+device_options:
+  legacy: false

@@ -1,0 +1,445 @@
+[
+    {
+        "id": "22381a7fe6ca4d26",
+        "type": "tab",
+        "label": "IOT Docker",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "dc3d58687e5f5d45",
+        "type": "mqtt-broker",
+        "name": "mosquitto",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "f81c1081f15aea0a",
+        "type": "ui_tab",
+        "name": "IOT Docker",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "fd4903d628e27cd9",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "0d3d8bd4321572a4",
+        "type": "ui_group",
+        "name": "IOT Docker Status",
+        "tab": "f81c1081f15aea0a",
+        "order": 1,
+        "disp": true,
+        "width": "10",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "eaf0218cd387c5bb",
+        "type": "mqtt in",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "topic": "iotdocker/mqtt_test",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "dc3d58687e5f5d45",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 130,
+        "y": 220,
+        "wires": [
+            [
+                "8c1b46c8c5cf5058"
+            ]
+        ]
+    },
+    {
+        "id": "390475779335a631",
+        "type": "mqtt out",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "topic": "iotdocker/mqtt_test",
+        "qos": "2",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "dc3d58687e5f5d45",
+        "x": 370,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "ed9a48dd52a94d8e",
+        "type": "inject",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.1",
+        "topic": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 80,
+        "wires": [
+            [
+                "390475779335a631",
+                "4c7a2b759f1c43e2"
+            ]
+        ]
+    },
+    {
+        "id": "9c775f5b754dd294",
+        "type": "debug",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "66c1604a6b225019",
+        "type": "ui_text",
+        "z": "22381a7fe6ca4d26",
+        "group": "0d3d8bd4321572a4",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "mqtt ping:",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "className": "",
+        "x": 660,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "8c1b46c8c5cf5058",
+        "type": "function",
+        "z": "22381a7fe6ca4d26",
+        "name": "last contact message",
+        "func": "var date = new Date()\nflow.set(\"last_contact\", date);\nmsg.payload = \"Last contact: \" + date.toLocaleTimeString() + \", ping: \" + (date.getTime() - msg.payload) + \" ms\"\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 220,
+        "wires": [
+            [
+                "9c775f5b754dd294",
+                "66c1604a6b225019"
+            ]
+        ]
+    },
+    {
+        "id": "01a197554afc7b6c",
+        "type": "comment",
+        "z": "22381a7fe6ca4d26",
+        "name": "MQTT ping: send timestamp to mqtt every minute",
+        "info": "",
+        "x": 200,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "9279cd0cccb36cad",
+        "type": "comment",
+        "z": "22381a7fe6ca4d26",
+        "name": "MQTT ping: receive timestamp, calculate time difference in ms and display",
+        "info": "",
+        "x": 280,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "e82940dba3f76be8",
+        "type": "http request",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "nginx:80",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "senderr": false,
+        "x": 310,
+        "y": 500,
+        "wires": [
+            [
+                "6135a9838ade2dfa"
+            ]
+        ]
+    },
+    {
+        "id": "2fa51ab13c31f422",
+        "type": "mqtt in",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "topic": "zigbee2mqtt/bridge/state",
+        "qos": "2",
+        "datatype": "auto",
+        "broker": "dc3d58687e5f5d45",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 360,
+        "wires": [
+            [
+                "eb851d2015f21c36",
+                "b8f59b072d35a1dc"
+            ]
+        ]
+    },
+    {
+        "id": "eb851d2015f21c36",
+        "type": "ui_text",
+        "z": "22381a7fe6ca4d26",
+        "group": "0d3d8bd4321572a4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "zigbee2mqtt bridge:",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "className": "",
+        "x": 490,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "b8f59b072d35a1dc",
+        "type": "debug",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 470,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "ffb4f8581ce1a528",
+        "type": "comment",
+        "z": "22381a7fe6ca4d26",
+        "name": "Display state of zigbee2mqtt bridge",
+        "info": "",
+        "x": 160,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "5785a98bc4477d04",
+        "type": "inject",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 500,
+        "wires": [
+            [
+                "e82940dba3f76be8"
+            ]
+        ]
+    },
+    {
+        "id": "6135a9838ade2dfa",
+        "type": "debug",
+        "z": "22381a7fe6ca4d26",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "4c7a2b759f1c43e2",
+        "type": "function",
+        "z": "22381a7fe6ca4d26",
+        "name": "timeout message",
+        "func": "var last_contact;\nif (!flow.get(\"last_contact\")) {\n    last_contact = new Date();\n    flow.set(\"last_contact\", last_contact);\n    // first contact, if server is up it will be overwritten rapidly\n    msg.payload=\"No contact to mqtt server\"\n    return msg;\n} else {\n    last_contact=flow.get(\"last_contact\");\n}\nif (msg.payload-last_contact> 80000) {\n    msg.payload=\"No contact to mqtt server\"\n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 140,
+        "wires": [
+            [
+                "66c1604a6b225019",
+                "9c775f5b754dd294"
+            ]
+        ]
+    }
+]
