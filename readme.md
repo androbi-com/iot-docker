@@ -8,38 +8,51 @@ sensors and actuators deployed and I use node-red as a control central,
 with zigbee2mqtt for the zigbee devices and influxdb for storing (and 
 displaying) the values. The docker stack currently deploys
 
-* `traefik` as a reverse proxy
-* `nginx` for displaying a simple web page with links to the applications
-* `portainer-ce` for controlling the deployed containers
-* `mosquitto` as a mqtt server
-* `zigbee2mqtt` for access to zigbee devices (I use CC2652R USB stick in the Pi)
-* `node-red` as a programmable controller
-* `influxdb` (2.0) to store and visualize data
-* more to come ..
-
-If you don't need zigbee, you can just comment out the zigbee2mqtt section
-in `docker-compose.yml`.
+* [`traefik`](https://doc.traefik.io/traefik/) as a reverse proxy
+* [`nginx`](https://www.nginx.com/) for displaying a simple web page with 
+  links to the application UIs
+* [`portainer-ce`](https://www.portainer.io/) for controlling the deployed 
+  containers
+* [`mosquitto`](https://mosquitto.org/) as a mqtt server
+* [`zigbee2mqtt`](https://www.zigbee2mqtt.io/) for access to zigbee 
+  devices (I use CC2652R USB stick in the Pi)
+* [`node-red`](https://nodered.org/) as a programmable controller
+* [`influxdb` (2.0)](https://www.influxdata.com/) to store and visualize data
+* maybe more to come ..
 
 I wanted to include the possibility to access the mqtt server from outside
 my local network without using a vpn. This requires careful security 
 considerations (we need tls for the mqtt service and all other services
 must be protected). For this reason I employ `traefik` as a "gate keeper"
 which handles the certificates via https://letsencrypt.org/ and
-restricts access to the local resources.
+restricts access to the local resources. `traefik` has a dashboard
+that comes in handy when configuring routers, services and middlewares. 
 
-`node-red` comes with a flow and a dashboard preinstalled that checks 
-the current connection status with the mqtt server. After starting 
-the stack you can add your own flows or nodes. `portainer-ce` lets 
-you control the deployed containers, you have to set up an admin user
-when entering for the first time.
-
-The frontend for `zigbee2mqtt` is also exposed (currently 
-without authentication on the local network), `influxdb` guides the
-user through a setup process with its nice UI.
-
-I have also included a very simple web page that is available on 
+A simple web page in included that is available on 
 http://raspi.local (substitute `raspi` by your hostname) which
-provides links to the above mentioned applications.
+provides links to all application UIs. This webpage is served by
+`nginx`.
+
+`portainer-ce` lets you control the deployed containers, you have 
+to set up an admin account when entering portainer for the first time.
+
+The `mosquitto` service implements an mqtt server which is used
+internally as a backend by `zigbee2mqtt` but can be used by any 
+application, even from outside your local network. 
+
+`zigbee2mqtt` is an open source zigbee to mqtt bridge compatible 
+with many available devices. The frontend for `zigbee2mqtt` is also
+exposed on the local network. If you don't need zigbee, you can 
+just comment out the zigbee2mqtt section in `docker-compose.yml`.
+
+`node-red` is a programming tool for event driven applications.
+comes with a flow and a dashboard preinstalled that checks 
+the current connection status with the mqtt server. After starting 
+the stack you can add your own flows or nodes. 
+
+`influxdb` is a time series database with a very complete UI that
+includes graphs and dashboards. The UI also guides the
+user through a setup process.
 
 ## Preparations
 
