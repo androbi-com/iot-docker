@@ -23,7 +23,9 @@ in `docker-compose.yml`.
 I wanted to include the possibility to access the mqtt server from outside
 my local network without using a vpn. This requires careful security 
 considerations (we need tls for the mqtt service and all other services
-must be protected). For this reason I employ `traefik` as a "gate keeper".
+must be protected). For this reason I employ `traefik` as a "gate keeper"
+which handles the certificates via https://letsencrypt.org/ and
+restricts access to the local resources.
 
 `node-red` comes with a flow and a dashboard preinstalled that checks 
 the current connection status with the mqtt server. After starting 
@@ -31,8 +33,8 @@ the stack you can add your own flows or nodes. `portainer-ce` lets
 you control the deployed containers, you have to set up an admin user
 when entering for the first time.
 
-The frontend for zigbee2mqtt is also exposed (currently 
-without authentication) on the local network), `influxdb` guides the
+The frontend for `zigbee2mqtt` is also exposed (currently 
+without authentication on the local network), `influxdb` guides the
 user through a setup process with its nice UI.
 
 I have also included a very simple web page that is available on 
@@ -84,11 +86,14 @@ LOCAL_HOST=raspi.local
 REMOTE_HOST=duckduck.duckdns.org
 
 where I have used `duckduck` as an example for the host name for remote 
-access, adjust accordingly.
+access, please adjust accordingly.
 
 A recommended but not obligatory install is `log2ram`, see
 https://github.com/azlux/log2ram, I installed it using the apt method. This 
 helps reducing wear on the SD from the system logs.
+
+If you want this setup to work for a longer timer span (and be faster), 
+the `volumes` directory should be mounted from a SSD instead of a SD.
 
 ## Installation
 
@@ -98,66 +103,79 @@ necessary for the applications in this stack. The idea is that the command
 
   cp -r setup volumes 
 
-should create a starting point for running the stack, providing
-all necessary directories and configuration files. For some 
-applications you might need to make some modifications 
-to configuration files.
+should create a starting point for running the stack, providing all 
+necessary directories and configuration files. For some applications 
+you might need to make some modifications to configuration files
+for your specific setup
 
-The zigbee2mqtt configuration in `docker-compose.yml`
-maps the device corresponding to the USB stick to `/dev/ttyACM0`
-inside the container. In my case, the device is `/dev/ttyUSB0`, so
-I map `/dev/ttyUSB0` to `/dev/ttyACM0`. Check your device
-with `ls /dev/tty*` and adjust the `docker-compose.yml`
-accordingly. 
+### zigbee2mqtt
 
-We also need to give permissions for the user to write to the device. On Ubuntu 20.04
-this can be done by adding the user `ubuntu` to the dialout group
+The `zigbee2mqtt` configuration in `docker-compose.yml` maps the 
+device corresponding to the USB stick to `/dev/ttyACM0` inside the 
+container. In my case, the device is `/dev/ttyUSB0`, so I map 
+`/dev/ttyUSB0` to `/dev/ttyACM0`. Check your device with 
+`ls /dev/tty*` and adjust the `docker-compose.yml` accordingly. 
+
+We also need to give permissions for the user to write to the device. 
+On Ubuntu 20.04 this can be done by adding the user `ubuntu` to the 
+dialout group
 
   sudo usermod -aG dialout ubuntu
+  su - $USER
 
-Logout and login again and then start the stack with
+### setting your own passwords
+
+The IOT-Docker stack uses a predefined user/password for the mqtt server, 
+so everything should work right out of the box in a local setup. This is
+a big no-no if you'll expose your mqtt server outside your local
+network. The used default username and password can be seen in the
+`zigbee2mqtt/data/configuration.yaml` file. If you just want to give it 
+a try on your local Pi you can skip this section, but it is good 
+practice to change the password even in this case. 
+
+If order to change the default user and password first remove the 
+existing password entry for user `mqtt` with the following command 
+
+  docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
+    eclipse-mosquitto mosquitto_passwd -D /
+    mosquitto/config/mosquitto.passwd mqtt
+
+The command may take a while to start if you don't have a local copy
+of the `eclipse-mosquitto` image. Then set a new password for the 
+user of your choice (change `user` in what follows)
+
+  docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
+    eclipse-mosquitto mosquitto_passwd /
+    mosquitto/config/mosquitto.passwd user
+
+The default user/password combination is referenced from within Node-RED 
+in the global configuration node `mqtt-broker/mosquitto`. In Node-RED, 
+credentials are encrypted in `data/flows_cred.json`. The key used 
+to encrypt these credentials is configured in `settings.js`, 
+see `credentialSecret`. After changing the mosquitto password
+you should first change the setting `credentialSecret` in 
+`volumes/node-red/data/settings.js`.
+
+Node-RED will then invalidate the current credentials and you have 
+to enter them again by editing the `mqtt-broker/mosquitto` node 
+(tab security) after starting the stack (next section). 
+
+The same user/password combination also has to be updated in 
+zigbee2mqtt, as it uses the mqtt server as a backend. Unfortunately 
+zigbee2mqtt stores the mqtt user and password as cleartext in 
+`data/configuration.yaml`. Edit the file and update user and 
+password to the new value.
+
+### start services
+
+We now are ready to start the stack.
 
   docker-compose up -d 
 
-and open http://raspi.local:8080
+and open http://raspi.local:8080 (substitute your host name). 
+Open the Node-Red dashboard and check if there is a connection with
+the mqtt server.
 
-## Setting your own passwords
-
-The IOT-Docker stack uses a predefined user/password for the mqtt server, so everything 
-works right out of the box. It is very important to change these passwords
-if you want to do anything more than just playing around a bit.
-The default users is `mqtt` and the corresponding password is `mqttpasswd`.
-
-We will now describe how to change these passwords. First, change the mosquitto server 
-password for user `mqtt` (or also change the user name)
-
-  docker exec -it mosquitto mosquitto_passwd /mosquitto/config/mosquitto.passwd mqtt
-
-and restart the mosquitto service
-
-  docker-compose restart mosquitto
-
-This user/password combination is referenced from within Node-RED in the global
-configuration node `mqtt-broker/mosquitto`. In Node-RED, credentials are encrypted in 
-`data/flows_cred.json`. The key used to encrypt these credentials is configured
-in `settings.js`, see `credentialSecret`. After changing the mosquitto password
-you should first change the setting `credentialSecret` in 
-`volumes/node-red/data/settings.js` and then restart Node-RED with
-
-  docker-compose restart node-red
-
-Node-RED now invalidates the current credentials and you have to enter them
-again by editing the `mqtt-broker/mosquitto` node (tab security). Enter
-the new user/password and you should soon see the ping status working again
-in the Node-RED dashboard. The credentials in `flows_cred.json` will be
-updated with a hash of the new password generated by your new key.
-
-The same user/password combination has to be updated in zigbee2mqtt, as it
-uses the mqtt server as a backend. Unfortunately zigbee2mqtt stores
-the mqtt user and password as cleartext in `data/configuration.yaml`. Edit
-the file and update user and password to the new value. Restart with
-
-  docker-compose restart zigbee2mqtt 
 
 ## Using telegraf with InfluxDB
 
@@ -173,6 +191,4 @@ data to the InfluxDB. Here is how to set this up:
 
 ## TODO list
 
-* use traefik as frontend for authentication, control of trafik from outside (duckdns) and or ssl termination
-* check if androbi.duckdns.org can be used with let's encrypt using traefik
-* try pivpn with ubuntu 64 bit
+* try pivpn with ubuntu 64 bit?
