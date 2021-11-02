@@ -63,7 +63,7 @@ to the `docker` group and have installed `docker-compose` with
 I have renamed my hostname (`sudo vi /etc/hostname`) to be `raspi` and I
 have installed the `avahi-daemon` on the Pi
 
-  sudo apt-get install avahi-daemon
+    sudo apt-get install avahi-daemon
 
 so that `raspi.local` can be resolved on the local network. Nevertheless
 it is a good idea to add an entry for `raspi.local` to `/etc/hosts` on
@@ -82,8 +82,8 @@ requests to the local IP of your Pi.
 You need to create a file `.env` in this directory (which is not included
 in the repository) which contains the following environment variables
 
-LOCAL_HOST=raspi.local
-REMOTE_HOST=duckduck.duckdns.org
+    LOCAL_HOST=raspi.local
+    REMOTE_HOST=duckduck.duckdns.org
 
 where I have used `duckduck` as an example for the host name for remote 
 access, please adjust accordingly.
@@ -101,7 +101,7 @@ The directory `setup` is a template for the `volumes` directory,
 which contains all volumes (represented as bind mounted directories)
 necessary for the applications in this stack. The idea is that the command
 
-  cp -r setup volumes 
+    cp -r setup volumes 
 
 should create a starting point for running the stack, providing all 
 necessary directories and configuration files. For some applications 
@@ -120,8 +120,8 @@ We also need to give permissions for the user to write to the device.
 On Ubuntu 20.04 this can be done by adding the user `ubuntu` to the 
 dialout group
 
-  sudo usermod -aG dialout ubuntu
-  su - $USER
+    sudo usermod -aG dialout ubuntu
+    su - $USER
 
 ### setting your own passwords
 
@@ -136,17 +136,17 @@ practice to change the password even in this case.
 If order to change the default user and password first remove the 
 existing password entry for user `mqtt` with the following command 
 
-  docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
-    eclipse-mosquitto mosquitto_passwd -D /
-    mosquitto/config/mosquitto.passwd mqtt
+    docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
+      eclipse-mosquitto mosquitto_passwd -D /
+      mosquitto/config/mosquitto.passwd mqtt
 
 The command may take a while to start if you don't have a local copy
 of the `eclipse-mosquitto` image. Then set a new password for the 
 user of your choice (change `user` in what follows)
 
-  docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
-    eclipse-mosquitto mosquitto_passwd /
-    mosquitto/config/mosquitto.passwd user
+    docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
+      eclipse-mosquitto mosquitto_passwd /
+      mosquitto/config/mosquitto.passwd user
 
 The default user/password combination is referenced from within Node-RED 
 in the global configuration node `mqtt-broker/mosquitto`. In Node-RED, 
@@ -170,7 +170,7 @@ password to the new value.
 
 We now are ready to start the stack.
 
-  docker-compose up -d 
+    docker-compose up -d 
 
 and open http://raspi.local:8080 (substitute your host name). 
 Open the Node-Red dashboard and check if there is a connection with
