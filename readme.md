@@ -138,7 +138,7 @@ first remove the existing password entry for user `mqtt` with the
 following command 
 
     docker run -i --rm -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
-      eclipse-mosquitto mosquitto_passwd -D /
+      eclipse-mosquitto mosquitto_passwd -D \
       mosquitto/config/mosquitto.passwd mqtt
 
 The command may take a while to start if you don't have a local copy
@@ -146,7 +146,7 @@ of the `eclipse-mosquitto` image. Then set a new password for the
 user of your choice (change `user` in what follows)
 
     docker run -i --rm -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
-      eclipse-mosquitto mosquitto_passwd /
+      eclipse-mosquitto mosquitto_passwd \
       mosquitto/config/mosquitto.passwd user
 
 The default user/password combination is referenced from within Node-RED 
