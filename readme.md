@@ -157,9 +157,10 @@ see `credentialSecret`. After changing the mosquitto password
 you should first change the setting `credentialSecret` in 
 `volumes/node-red/data/settings.js`.
 
-Node-RED will then invalidate the current credentials and you have 
+After starting the stack (see next section) Node-Red will
+then invalidate the current credentials and you have 
 to enter them again by editing the `mqtt-broker/mosquitto` node 
-(tab security) after starting the stack (next section). 
+(tab security). 
 
 The same user/password combination also has to be updated in 
 zigbee2mqtt, as it uses the mqtt server as a backend. Unfortunately 
@@ -173,21 +174,43 @@ We now are ready to start the stack.
 
     docker-compose up -d 
 
-and open http://raspi.local:8080 (substitute your host name). 
-Open the Node-Red dashboard and check if there is a connection with
-the mqtt server.
 
+## After starting the stack
+
+Open http://raspi.local:8080 (substitute your host name). 
+
+* open `traefik dashboard` from the menu and check for errors
+* open `portainer` and create an admin account
+
+If you have changed the default password, open `node-red flows` and
+go to "Global Configuration Nodes -> mqtt-broker -> mosquitto", edit
+the node and update the user/password in the "Security" tab. Deploy
+the flow. Then
+
+* open `node-red dashboard` and check if the "mqtt ping" has a recent 
+  contact. Check if the zigbee2mqtt bridge is online
+* open `zigbee2mqtt frontend` 
+* open `influxdb` and follow the instructions to set up a new user
+
+Now everything is up to you, add some flows to Node-Red, use `influxdb`
+to save and display data (from mqtt messages or from telegraf). Add 
+devices to your zigbee network and include them in your Node-Red 
+control process or dashboard. The next sections are some short 
+notes from my own tests.
 
 ## Using telegraf with InfluxDB
 
-In order to obtain data about your Raspberry current CPU usage, disk I/O etc. you
-can use the Telegraf agent which is executed directly on your Pi and communicates the
-data to the InfluxDB. Here is how to set this up:
+In order to obtain data about your Raspberry current CPU usage, disk I/O 
+etc. you can use the Telegraf agent which is executed directly on your 
+Pi and communicates the data to the InfluxDB. Here is how to set this up:
 
-* follow https://docs.influxdata.com/telegraf/v1.20/introduction/installation/ to install telegraf
-* use the Influx UI to create a configuration: Data -> Telegraf -> Create Configuration
+* follow https://docs.influxdata.com/telegraf/v1.20/introduction/installation/
+  to install telegraf
+* use the Influx UI to create a configuration: Data -> Telegraf -> 
+  Create Configuration
 * run telegraf interactively to see if it works as indicated
-* download configuration and include token in file. Copy to /etc/telegraf/telegraf.conf
+* download configuration and include token in file. 
+  Copy to /etc/telegraf/telegraf.conf
 * run `sudo systemctl start telegraf` 
 
 ## TODO list
