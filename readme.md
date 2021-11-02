@@ -133,10 +133,11 @@ network. The used default username and password can be seen in the
 a try on your local Pi you can skip this section, but it is good 
 practice to change the password even in this case. 
 
-If order to change the default user and password first remove the 
-existing password entry for user `mqtt` with the following command 
+If order to change the default user and password before running the stack
+first remove the existing password entry for user `mqtt` with the 
+following command 
 
-    docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
+    docker run -i --rm -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
       eclipse-mosquitto mosquitto_passwd -D /
       mosquitto/config/mosquitto.passwd mqtt
 
@@ -144,7 +145,7 @@ The command may take a while to start if you don't have a local copy
 of the `eclipse-mosquitto` image. Then set a new password for the 
 user of your choice (change `user` in what follows)
 
-    docker run -i -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
+    docker run -i --rm -v ${PWD}/volumes/mosquitto/config:/mosquitto/config \
       eclipse-mosquitto mosquitto_passwd /
       mosquitto/config/mosquitto.passwd user
 
