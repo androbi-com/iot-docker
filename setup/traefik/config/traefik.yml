@@ -10,7 +10,7 @@ entryPoints:
 api:
   dashboard: true
 log:
-  level: debug
+        #level: debug
 providers:
     docker: 
       exposedbydefault: false

@@ -28,14 +28,13 @@ services:
       - "traefik.enable=true"
       # middleware: redirect to https
       - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.web_local_header.headers.customrequestheaders.X-Root-Dir=web_local"
-      - "traefik.http.middlewares.web_remote_header.headers.customrequestheaders.X-Root-Dir=web_remote"
       - "traefik.http.middlewares.allow_ip_local.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.1.0/24"
       - "traefik.http.middlewares.replacepath_web_remote.replacepath.path=/web_remote/"
       - "traefik.http.middlewares.replacepath_web_local.replacepath.path=/web_local/"
+      - "traefik.http.middlewares.replacepath_web_test.replacepath.path=/web_test/"
       - "traefik.tcp.middlewares.tcp_allow_ip_local.ipwhitelist.sourcerange=127.0.0.1/32, 192.168.1.0/24"
       # router http: redirect http://REMOTE_HOST to https
-      - "traefik.http.routers.web_to_websecure.rule=Host(`${REMOTE_HOST}`)"
+      - "traefik.http.routers.web_to_websecure.rule=Host(`${REMOTE_HOST}`) && Path(`/`)"
       - "traefik.http.routers.web_to_websecure.middlewares=https-redirect"
       - "traefik.http.routers.web_to_websecure.entrypoints=web"
       # this is a fake service which will never get called but is necessary for the config
@@ -65,11 +64,15 @@ services:
       - "traefik.http.routers.remote_websecure.entrypoints=websecure"
       - "traefik.http.routers.remote_websecure.middlewares=replacepath_web_remote"
       - "traefik.http.routers.remote_websecure.tls=true"
-      # the local web page is http only and contains links to all servcies
       - "traefik.http.routers.remote_websecure.tls.certresolver=myresolver"
+      # the local web page is http only and contains links to all servcies
       - "traefik.http.routers.local_websecure.rule=Host(`${LOCAL_HOST}`) && Path(`/`)"
       - "traefik.http.routers.local_websecure.entrypoints=web"
       - "traefik.http.routers.local_websecure.middlewares=allow_ip_local,replacepath_web_local"
+      # a testpoint for http from remote (80 needs to be redirected for acme to work)
+      - "traefik.http.routers.remote_html_testpoint.rule=Host(`${REMOTE_HOST}`) && Path(`/testpoint`)"
+      - "traefik.http.routers.remote_html_testpoint.entrypoints=web"
+      - "traefik.http.routers.remote_html_testpoint.middlewares=replacepath_web_test"
     networks:
       - traefik
 
